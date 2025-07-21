@@ -1,15 +1,33 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
-#Read Image
+path=r'D:/ImageProcessing/images/ffgh.jpg'
+img=cv2.imread(path,cv2.IMREAD_GRAYSCALE)
+print("Image Shape: ",img.shape)
 
-img = cv2.imread("images/ffgh.jpg")
-# print(type(img))
-# print(img.shape)
-# img_gray= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-# cv2.imshow("window",img_gray)
+#gray level over 100
+over_100_intensity=np.sum(img>100)
+print(f'Pixels with gray level over 100 : {over_100_intensity}')
 
-img[:,:,2] =0
+#maximum intensity in given picture
+max_intensity=np.max(img)
+print(f'Maximum gray level value {max_intensity}')
 
-cv2.imshow("window",img)
-cv2.waitKey(0)
+#replacing central value with mean of 3x3 neighbourhood window (helps smoothing the picture)
+h,w=img.shape
+center_y, center_x=h//2,w//2
+neighborhood=img[center_y-1:center_y+2, center_x-1:center_x+2]
+avg_value=int(np.mean(neighborhood))
+img[center_y,center_x]=avg_value
+print(f'Replacing values at {center_y}, {center_x} with neighbour window mean {avg_value}')
+
+plt.imshow(img,cmap='gray')
+plt.title('Modified Image')
+plt.axis('off')
+plt.show()
+
+
+cv2.imwrite(r'C:\Users\monta\Downloads\Modified Map 2.jpg', img)
+
+
