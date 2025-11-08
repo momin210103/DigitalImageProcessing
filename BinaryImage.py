@@ -1,27 +1,28 @@
-from PIL import Image
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
 
-# Step 1: Load and convert to grayscale
-image_path =r'D:/ImageProcessing/images/ffgh.jpg'
-img = Image.open(image_path).convert("L")
-pixels = list(img.getdata())
-width, height = img.size
+img = cv2.imread("images/Image1.jpg",cv2.IMREAD_GRAYSCALE)
 
-# Step 2: Set a threshold (0–255)
-threshold = 128  # change as needed
+rows ,cols = img.shape
+result = np.zeros_like(img)
+T = 127
 
-# Step 3: Apply threshold manually
-binary_pixels = []
-for p in pixels:
-    if p >= threshold:
-        binary_pixels.append(255)  # White
-    else:
-        binary_pixels.append(0)    # Black
+for i in range(rows):
+    for j in range(cols):
+        if img[i,j] > T:
+            result[i,j] = 255
+        else:
+            result[i,j] = 0
 
-# Step 4: Create and save binary image
-binary_img = Image.new("L", (width, height))
-binary_img.putdata(binary_pixels)
-binary_img.save("binary_image.jpg")
+plt.figure(figsize=(12,8))
+plt.subplot(1,2,1)
+plt.imshow(img,cmap='gray')
+plt.title("Orginal Image")
+plt.axis("off")
 
-# Optional: Show images
-img.show(title="Original Grayscale")
-binary_img.show(title="Binary Image")
+plt.subplot(1,2,2)
+plt.imshow(result,cmap='gray')
+plt.title("Binary Image")
+plt.axis("off")
+plt.show()

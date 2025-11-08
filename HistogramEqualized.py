@@ -1,39 +1,56 @@
-from PIL import Image
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
 
-# Step 1: Load and convert to grayscale
+img = cv2.imread("images/Image1.jpg",cv2.IMREAD_GRAYSCALE)
 
-image_path =r'D:/ImageProcessing/images/ffgh.jpg'
-img = Image.open(image_path).convert("L")
-pixels = list(img.getdata())
-width, height = img.size
-total_pixels = width * height
+rows ,cols = img.shape
+total_pxl = rows*cols
 
-# Step 2: Compute histogram manually
-hist = [0] * 256
-for p in pixels:
-    hist[p] += 1
+#step 1: calculate hist
+hist = np.zeros(256,dtype=int)
+for i in range(rows):
+    for j in range(cols):
+        hist[img[i,j]] +=1
 
-# Step 3: Compute normalized CDF (Cumulative Distribution Function)
-cdf = [0] * 256
-cdf[0] = hist[0]
-for i in range(1, 256):
-    cdf[i] = cdf[i-1] + hist[i]
+#step 2: calculate pdf
+pdf = hist/total_pxl
 
-# Step 4: Normalize CDF to map to [0, 255]
-cdf_min = min(c for c in cdf if c > 0)  # smallest non-zero CDF value
-cdf_normalized = [
-    round((cdf[i] - cdf_min) / (total_pixels - cdf_min) * 255)
-    for i in range(256)
-]
+#step 3: calculate cdf
+cdf = np.cumsum(pdf)
 
-# Step 5: Map original pixels to equalized values
-equalized_pixels = [cdf_normalized[p] for p in pixels]
+#step 5: Normalize CDF 0 -255
+equalized_map = np.round(cdf*255)
 
-# Step 6: Create and save equalized image
-equalized_img = Image.new("L", (width, height))
-equalized_img.putdata(equalized_pixels)
-equalized_img.save("histogram_equalized.jpg")
+#step 6: Old pixels map to new pixels
+equalized_img = np.zeros_like(img)
+for i in range(rows):
+    for j in range(cols):
+        equalized_img[i,j] = equalized_map[img[i,j]]
+#step 7: equalized histo
+hist_eq = np.zeros(256,dtype=int)
+for i in range(rows):
+    for j in range(cols):
+        hist_eq[equalized_img[i,j]] +=1
 
-# Optional: Show before and after
-img.show(title="Original Image")
-equalized_img.show(title="Histogram Equalized Image")
+
+#plot
+
+plt.figure(figsize=(12,8))
+plt.subplot(2,2,1)
+plt.imshow(img,cmap='gray')
+plt.title("Orginal Image")
+
+plt.subplot(2,2,2)
+plt.imshow(equalized_img,cmap='gray')
+plt.title("New Image")
+
+plt.subplot(2,2,3)
+plt.bar(range(256),pdf,color='gray')
+plt.title("Histogram")
+
+plt.subplot(2,2,4)
+plt.bar(range(256),hist_eq,color='gray')
+plt.title("Equalized Histogram")
+plt.tight_layout()
+plt.show()
